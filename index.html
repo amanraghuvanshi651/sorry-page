@@ -356,7 +356,7 @@ function burstConfetti(){
 let audio,playing=false;
 function toggleMusic(){
   const btn=document.getElementById('musicBtn');
-  if(!audio){audio=new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');audio.loop=true;audio.volume=0.35;}
+  if(!audio){audio=new Audio('https://www.chosic.com/download-audio/30348/');audio.loop=true;audio.volume=0.35;}
   if(playing){audio.pause();btn.textContent='🎵';playing=false;}
   else{audio.play().catch(()=>{});btn.textContent='🎶';playing=true;}
 }
