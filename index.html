@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;600&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Lato', sans-serif;
+    background: linear-gradient(135deg, #fff0f3 0%, #ffe0e9 30%, #ffd6e7 60%, #fce4ec 100%);
+    min-height: 100vh; overflow-x: hidden; color: #5a2a3a;
+  }
+  #hearts-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+  .page { position: relative; z-index: 1; }
+  .hero { text-align: center; padding: 60px 24px 40px; }
+  .glow-ring {
+    width: 140px; height: 140px; border-radius: 50%;
+    background: radial-gradient(circle, #ff6b9d55, #ff4d7d22);
+    border: 2px solid #ff6b9d88;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 28px;
+    animation: pulse-ring 2.5s ease-in-out infinite;
+    box-shadow: 0 0 40px #ff6b9d44, 0 0 80px #ff4d7d22;
+  }
+  .heart-icon { font-size: 64px; animation: heartbeat 1.4s ease-in-out infinite; filter: drop-shadow(0 0 12px #ff4d7d88); }
+  @keyframes heartbeat { 0%,100%{transform:scale(1)} 14%{transform:scale(1.18)} 28%{transform:scale(1)} 42%{transform:scale(1.12)} 56%{transform:scale(1)} }
+  @keyframes pulse-ring { 0%,100%{box-shadow:0 0 30px #ff6b9d44,0 0 60px #ff4d7d22} 50%{box-shadow:0 0 55px #ff6b9d77,0 0 100px #ff4d7d44} }
+  .hero h1 { font-family:'Playfair Display',serif; font-size:clamp(2.8rem,8vw,5rem); color:#c2185b; text-shadow:0 0 30px #ff4d7d44; margin-bottom:8px; animation:fadeSlideDown 1s ease both; }
+  .hero .subtitle { font-size:clamp(1rem,3vw,1.25rem); color:#ad1457cc; font-style:italic; font-weight:300; animation:fadeSlideDown 1.3s ease both; letter-spacing:0.04em; }
+  @keyframes fadeSlideDown { from{opacity:0;transform:translateY(-24px)} to{opacity:1;transform:translateY(0)} }
+  .typing-section { max-width:680px; margin:0 auto; padding:20px 24px 10px; text-align:center; }
+  .typing-box { background:rgba(255,255,255,0.62); border:1px solid #ff6b9d44; border-radius:20px; padding:28px 32px; backdrop-filter:blur(12px); box-shadow:0 8px 32px #ff4d7d18; }
+  #typing-text { font-family:'Playfair Display',serif; font-size:clamp(1.1rem,3.5vw,1.5rem); color:#880e4f; min-height:60px; font-style:italic; letter-spacing:0.02em; line-height:1.6; }
+  .cursor { display:inline-block; width:2px; height:1.2em; background:#c2185b; vertical-align:middle; animation:blink 0.8s steps(1) infinite; border-radius:1px; margin-left:2px; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  .glass-section { max-width:720px; margin:0 auto; padding:24px 16px; }
+  .glass-card { background:rgba(255,255,255,0.55); border:1px solid #ff6b9d33; border-radius:24px; padding:32px 28px; backdrop-filter:blur(16px); box-shadow:0 8px 40px #ff4d7d14; margin-bottom:20px; transition:transform 0.3s ease,box-shadow 0.3s ease; }
+  .glass-card:hover { transform:translateY(-3px); box-shadow:0 16px 50px #ff4d7d22; }
+  .glass-card p { font-size:clamp(0.95rem,2.5vw,1.1rem); line-height:1.85; color:#6d2840; margin-bottom:14px; }
+  .glass-card p:last-child { margin-bottom:0; }
+  .apology-line { display:flex; align-items:flex-start; gap:10px; margin:10px 0; font-size:clamp(0.9rem,2.5vw,1.05rem); color:#7b1e45; font-weight:300; }
+  .apology-line .dot { color:#e91e8c; font-size:1.2em; flex-shrink:0; margin-top:2px; }
+  .highlight-quote { background:linear-gradient(135deg,#ff4d7d18,#e91e8c0f); border-left:4px solid #e91e8c; border-radius:0 20px 20px 0; padding:24px 28px; margin:0 0 20px; }
+  .highlight-quote blockquote { font-family:'Playfair Display',serif; font-size:clamp(1.1rem,3.5vw,1.4rem); font-style:italic; color:#ad1457; line-height:1.7; text-align:center; }
+  .heart-btn-wrap { text-align:center; padding:10px 16px 20px; }
+  .heart-btn { background:linear-gradient(135deg,#e91e8c,#ff4d7d); color:white; border:none; border-radius:50px; padding:16px 36px; font-size:1.05rem; font-family:'Lato',sans-serif; cursor:pointer; box-shadow:0 6px 24px #e91e8c55; transition:all 0.3s ease; letter-spacing:0.06em; position:relative; overflow:hidden; }
+  .heart-btn::before { content:''; position:absolute; top:50%; left:50%; width:0; height:0; background:rgba(255,255,255,0.3); border-radius:50%; transform:translate(-50%,-50%); transition:width 0.5s ease,height 0.5s ease; }
+  .heart-btn:hover::before { width:300px; height:300px; }
+  .heart-btn:hover { transform:translateY(-3px); box-shadow:0 12px 36px #e91e8c66; }
+  .heart-btn:active { transform:scale(0.97); }
+  #hidden-love { display:none; animation:fadeIn 0.8s ease both; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  .section-title { font-family:'Playfair Display',serif; font-size:clamp(1.5rem,5vw,2.2rem); color:#c2185b; text-align:center; margin:30px 0 20px; text-shadow:0 0 20px #ff4d7d22; }
+  .reasons-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; padding:0 16px 20px; max-width:720px; margin:0 auto; }
+  .reason-card { background:rgba(255,255,255,0.6); border:1px solid #ff6b9d33; border-radius:20px; padding:20px 16px; text-align:center; backdrop-filter:blur(12px); transition:all 0.3s ease; animation:popIn 0.5s ease both; }
+  .reason-card:hover { transform:translateY(-5px) scale(1.03); background:rgba(255,255,255,0.8); box-shadow:0 12px 32px #ff4d7d22; }
+  .reason-card .emoji { font-size:2rem; display:block; margin-bottom:8px; }
+  .reason-card p { font-size:0.88rem; color:#7b1e45; line-height:1.5; font-weight:300; }
+  @keyframes popIn { from{opacity:0;transform:scale(0.85)} to{opacity:1;transform:scale(1)} }
+  .timeline { max-width:620px; margin:0 auto; padding:0 16px 20px; position:relative; }
+  .timeline::before { content:''; position:absolute; left:50%; top:0; bottom:0; width:2px; background:linear-gradient(to bottom,transparent,#ff6b9d88,#e91e8c88,transparent); transform:translateX(-50%); }
+  .timeline-item { display:flex; margin-bottom:28px; position:relative; }
+  .timeline-item:nth-child(odd) { flex-direction:row-reverse; }
+  .timeline-content { width:calc(50% - 24px); background:rgba(255,255,255,0.6); border:1px solid #ff6b9d33; border-radius:16px; padding:16px 18px; backdrop-filter:blur(10px); transition:all 0.3s ease; }
+  .timeline-content:hover { transform:scale(1.03); box-shadow:0 8px 24px #ff4d7d18; }
+  .timeline-dot { position:absolute; left:50%; top:16px; width:16px; height:16px; background:#e91e8c; border-radius:50%; transform:translateX(-50%); box-shadow:0 0 12px #e91e8c88; animation:dotPulse 2s ease-in-out infinite; }
+  @keyframes dotPulse { 0%,100%{box-shadow:0 0 8px #e91e8c66} 50%{box-shadow:0 0 20px #e91e8caa} }
+  .tl-date { font-size:0.78rem; color:#e91e8caa; font-weight:400; margin-bottom:4px; letter-spacing:0.04em; text-transform:uppercase; }
+  .tl-title { font-family:'Playfair Display',serif; font-size:0.95rem; color:#880e4f; margin-bottom:4px; }
+  .tl-desc { font-size:0.82rem; color:#9e4060; line-height:1.5; font-weight:300; }
+  .forgive-section { text-align:center; padding:30px 24px 20px; max-width:500px; margin:0 auto; }
+  .forgive-section > p { font-family:'Playfair Display',serif; font-size:clamp(1.2rem,4vw,1.6rem); color:#ad1457; margin-bottom:24px; font-style:italic; }
+  .forgive-btns { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+  .btn-yes { background:linear-gradient(135deg,#e91e8c,#ff4d7d); color:white; border:none; border-radius:50px; padding:14px 36px; font-size:1rem; cursor:pointer; font-family:'Lato',sans-serif; box-shadow:0 6px 24px #e91e8c55; transition:all 0.3s ease; }
+  .btn-yes:hover { transform:translateY(-3px) scale(1.05); box-shadow:0 12px 32px #e91e8c66; }
+  .btn-abs { background:rgba(255,255,255,0.7); color:#e91e8c; border:1.5px solid #ff6b9d; border-radius:50px; padding:14px 32px; font-size:1rem; cursor:pointer; font-family:'Lato',sans-serif; backdrop-filter:blur(8px); transition:all 0.3s ease; }
+  .btn-abs:hover { background:rgba(255,255,255,0.9); transform:translateY(-3px); }
+  #forgive-response { margin-top:20px; font-family:'Playfair Display',serif; font-size:clamp(1.1rem,3.5vw,1.4rem); color:#c2185b; font-style:italic; display:none; animation:fadeIn 0.6s ease both; }
+  .music-btn { position:fixed; bottom:24px; right:24px; width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg,#e91e8c,#ff4d7d); color:white; border:none; font-size:1.3rem; cursor:pointer; box-shadow:0 6px 20px #e91e8c55; display:flex; align-items:center; justify-content:center; z-index:100; transition:all 0.3s ease; }
+  .music-btn:hover { transform:scale(1.12); box-shadow:0 10px 28px #e91e8c77; }
+  footer { text-align:center; padding:30px 16px; font-size:0.9rem; color:#ad145788; font-style:italic; letter-spacing:0.04em; }
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-thumb { background:#ff6b9d88; border-radius:3px; }
+  @media (max-width:480px) {
+    .timeline::before { left:16px; }
+    .timeline-item,.timeline-item:nth-child(odd) { flex-direction:column; padding-left:40px; }
+    .timeline-content { width:100%; }
+    .timeline-dot { left:16px; top:12px; }
+  }
+</style>
+</head>
+<body>
+<canvas id="hearts-canvas"></canvas>
+<div class="page">
+  <section class="hero">
+    <div class="glow-ring"><span class="heart-icon">❤️</span></div>
+    <h1>I'm Sorry ❤️</h1>
+    <p class="subtitle">From the bottom of my heart, always and forever</p>
+  </section>
+  <div class="typing-section">
+    <div class="typing-box">
+      <div id="typing-text"><span class="cursor"></span></div>
+    </div>
+  </div>
+  <div class="glass-section">
+    <div class="glass-card">
+      <p>Hi Bittu 🥺, I know I hurt you, and that is the last thing I ever wanted to do. Words can't fully express how deeply sorry I am — but I need you to know that every moment without your smile feels like a world without colour.</p>
+      <div class="apology-line"><span class="dot">🌸</span><span>I never want to hurt you. Not now, not ever.</span></div>
+      <div class="apology-line"><span class="dot">💞</span><span>You mean everything to me — more than you'll ever know.</span></div>
+      <div class="apology-line"><span class="dot">🌹</span><span>No matter what happens, I'll always love you.</span></div>
+      <div class="apology-line"><span class="dot">✨</span><span>You are the most beautiful part of my life.</span></div>
+    </div>
+    <div class="highlight-quote">
+      <blockquote>"In every universe, in every lifetime, I would still choose you."</blockquote>
+    </div>
+  </div>
+  <div class="heart-btn-wrap">
+    <button class="heart-btn" id="openHeartBtn" onclick="openHeart()">🫀 Open My Heart</button>
+  </div>
+  <div id="hidden-love">
+    <div class="glass-section">
+      <div class="glass-card">
+        <p>I've been sitting here thinking about all the tiny moments that make you <em>you</em> — the way you laugh, the warmth of your presence, the way everything feels softer when you're around. I took that for granted, and I'm so sorry.</p>
+        <p>You deserve someone who chooses you, every single day. Someone who fights for you instead of fighting with you. I want to be that person. I <em>am</em> that person. I just forgot for a moment — and I'll spend forever making sure you never forget how much you mean to me.</p>
+        <p style="text-align:center;font-family:'Playfair Display',serif;color:#ad1457;font-style:italic;font-size:1.1rem;">"You are my calm in a chaotic world. My home. My everything."</p>
+      </div>
+    </div>
+  </div>
+  <div class="section-title">Reasons I Love You 🌸</div>
+  <div class="reasons-grid" id="reasonsGrid"></div>
+  <div class="section-title">Our Beautiful Memories 🎀</div>
+  <div class="timeline" id="timeline"></div>
+  <div class="forgive-section">
+    <p>Can you forgive me? 🥺</p>
+    <div class="forgive-btns">
+      <button class="btn-yes" onclick="forgiveMe('yes')">Yes, I forgive you 💕</button>
+      <button class="btn-abs" onclick="forgiveMe('abs')">Absolutely! ❤️‍🔥</button>
+    </div>
+    <div id="forgive-response"></div>
+  </div>
+  <footer>Made with endless love ❤️ — just for you, always</footer>
+</div>
+<button class="music-btn" id="musicBtn" onclick="toggleMusic()">🎵</button>
+
+<script>
+const canvas = document.getElementById('hearts-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [];
+
+const nicknames = ['Bittu', 'Raccoon', 'Dynasuar', 'Cutie Pai', 'cuhipuhi'];
+const palette = [
+  ['#ff6b9d','#fff0f5'],
+  ['#e91e8c','#fff0f5'],
+  ['#ff4d7d','#fff0f5'],
+  ['#c2185b','#fce4ec'],
+  ['#f06292','#fff0f5'],
+];
+
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+/* 
+  Heart drawn with (cx, cy) as the BOTTOM TIP.
+  Width ≈ 2.2 * r, Height ≈ 2 * r
+  The safe text zone inside the heart is roughly a circle of radius 0.45*r
+  centred at (cx, cy - 0.8*r)
+*/
+function buildHeartPath(cx, cy, r) {
+  /* scale factor so heart total height ≈ 2r */
+  const k = r / 10;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  /* left side up to left lobe */
+  ctx.bezierCurveTo(cx - 1*k, cy - 4*k,  cx - 11*k, cy - 4*k,  cx - 11*k, cy - 10*k);
+  /* left lobe top arc */
+  ctx.bezierCurveTo(cx - 11*k, cy - 17*k, cx,          cy - 17*k, cx,          cy - 12*k);
+  /* right lobe top arc */
+  ctx.bezierCurveTo(cx,          cy - 17*k, cx + 11*k, cy - 17*k, cx + 11*k, cy - 10*k);
+  /* right side down to tip */
+  ctx.bezierCurveTo(cx + 11*k, cy - 4*k,  cx + 1*k,  cy - 4*k,  cx,          cy);
+  ctx.closePath();
+}
+
+/* The visual centre of the heart (where text should go) */
+function heartTextCenter(cx, cy, r) {
+  const k = r / 10;
+  return { tx: cx, ty: cy - 10*k };
+}
+
+/* Maximum font size so text fits inside the safe zone of the heart.
+   Safe width ≈ 1.1 * r  (the widest usable band near the centre)
+   We shrink until text fits. */
+function fitFontSize(label, maxW, minSize, maxSize) {
+  for (let fs = maxSize; fs >= minSize; fs -= 0.5) {
+    ctx.font = `600 ${fs}px 'Lato', sans-serif`;
+    if (ctx.measureText(label).width <= maxW) return fs;
+  }
+  return minSize;
+}
+
+function makeParticle(type) {
+  const x = 80 + Math.random() * (W - 160);
+  const speed = 0.5 + Math.random() * 0.85;
+  const opacity = 0.6 + Math.random() * 0.3;
+  const drift = (Math.random() - 0.5) * 0.5;
+  const sway = Math.random() * Math.PI * 2;
+  const swaySpeed = 0.012 + Math.random() * 0.016;
+  const pIdx = ~~(Math.random() * palette.length);
+
+  if (type === 'nick') {
+    const label = nicknames[~~(Math.random() * nicknames.length)];
+    /* Big enough so any nickname fits: base radius 52–70px */
+    const r = 55 + Math.random() * 18;
+    return { type:'nick', x, y: H + r*2.2, speed, opacity, drift, sway, swaySpeed, label, r, pIdx };
+  } else {
+    const r = 9 + Math.random() * 13;
+    return { type:'heart', x, y: H + r*2.2, speed, opacity, drift, sway, swaySpeed, r, pIdx };
+  }
+}
+
+function drawPlainHeart(p) {
+  ctx.save();
+  ctx.globalAlpha = p.opacity;
+  ctx.fillStyle = palette[p.pIdx][0];
+  buildHeartPath(p.x, p.y, p.r);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawNickHeart(p) {
+  ctx.save();
+
+  /* 1. Fill heart */
+  ctx.globalAlpha = p.opacity;
+  ctx.fillStyle = palette[p.pIdx][0];
+  buildHeartPath(p.x, p.y, p.r);
+  ctx.fill();
+
+  /* 2. Soft white inner stroke for depth */
+  ctx.globalAlpha = p.opacity * 0.28;
+  ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+  ctx.lineWidth = p.r * 0.09;
+  buildHeartPath(p.x, p.y - p.r * 0.06, p.r * 0.78);
+  ctx.stroke();
+
+  /* 3. Clip to heart so text CANNOT escape */
+  ctx.globalAlpha = p.opacity;
+  buildHeartPath(p.x, p.y, p.r);
+  ctx.clip();
+
+  /* 4. Measure & fit font — safe text width = 1.05 * r */
+  const safeW = p.r * 1.05;
+  const fs = fitFontSize(p.label, safeW, 8, p.r * 0.42);
+
+  /* 5. Text center inside heart */
+  const { tx, ty } = heartTextCenter(p.x, p.y, p.r);
+
+  ctx.font = `600 ${fs}px 'Lato', sans-serif`;
+  ctx.fillStyle = palette[p.pIdx][1];
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(p.label, tx, ty);
+
+  ctx.restore();
+}
+
+let frame = 0;
+function animate() {
+  ctx.clearRect(0, 0, W, H);
+  if (frame % 20 === 0) particles.push(makeParticle('heart'));
+  if (frame % 60 === 0) particles.push(makeParticle('nick'));
+  particles = particles.filter(p => p.y > -(p.r * 2.5));
+  for (const p of particles) {
+    p.sway += p.swaySpeed;
+    p.x += Math.sin(p.sway) * p.drift;
+    p.y -= p.speed;
+    if (p.type === 'nick') drawNickHeart(p);
+    else drawPlainHeart(p);
+  }
+  frame++;
+  requestAnimationFrame(animate);
+}
+animate();
+
+/* ---- TYPING ---- */
+const msgs = [
+  "I never want to hurt you. 🌸",
+  "You mean everything to me. 💞",
+  "You are the most beautiful part of my life. 🌹",
+  "No matter what happens, I'll always love you. ❤️",
+  "In every universe, I would still choose you. ✨"
+];
+let mIdx=0,cIdx=0,deleting=false;
+const typingEl=document.getElementById('typing-text');
+function type(){
+  const msg=msgs[mIdx];
+  if(!deleting){cIdx++;typingEl.innerHTML=msg.slice(0,cIdx)+'<span class="cursor"></span>';if(cIdx===msg.length){deleting=true;setTimeout(type,2200);return;}setTimeout(type,55);}
+  else{cIdx--;typingEl.innerHTML=msg.slice(0,cIdx)+'<span class="cursor"></span>';if(cIdx===0){deleting=false;mIdx=(mIdx+1)%msgs.length;setTimeout(type,400);return;}setTimeout(type,28);}
+}
+type();
+
+function openHeart(){
+  document.getElementById('hidden-love').style.display='block';
+  const btn=document.getElementById('openHeartBtn');
+  btn.textContent='💖 My Heart is Yours';
+  btn.style.background='linear-gradient(135deg,#ad1457,#e91e8c)';
+  burstConfetti();
+}
+
+const reasons=[
+  {emoji:'😊',text:'Your smile 😊 lights up every room you walk into'},
+  {emoji:'💪',text:'Your strength that carries both of us through hard days'},
+  {emoji:'🌙',text:'The way you make ordinary nights feel like magic by showing those 😍'},
+  {emoji:'🤣',text:'Your laugh — the most beautiful sound I know 😇'},
+  {emoji:'🌸',text:'Your kindness that makes the world softer'},
+  {emoji:'🫂',text:'The warmth in your arms that feels like home 🥹'},
+];
+const grid=document.getElementById('reasonsGrid');
+reasons.forEach((r,i)=>{
+  const card=document.createElement('div');card.className='reason-card';card.style.animationDelay=(i*0.1)+'s';
+  card.innerHTML=`<span class="emoji">${r.emoji}</span><p>${r.text}</p>`;grid.appendChild(card);
+});
+
+const memories=[
+  {date:'Our Beginning',title:'The First Hello',desc:'The day everything changed — when We became best friends.'},
+  {date:'First Date',title:'Just the Two of Us',desc:'Nervous smiles, happy butterflies, the heeeeeeee 😜 and a story beginning.'},
+  {date:'A Quiet Evening',title:'When I Knew',desc:'Somewhere in that moment, I knew you were everything.'},
+  {date:'Our Little Adventures',title:'Together Everywhere',desc:'Every road was better because you were beside me.'},
+];
+const tl=document.getElementById('timeline');
+memories.forEach(m=>{
+  const item=document.createElement('div');item.className='timeline-item';
+  item.innerHTML=`<div class="timeline-content"><div class="tl-date">${m.date}</div><div class="tl-title">${m.title}</div><div class="tl-desc">${m.desc}</div></div><div class="timeline-dot"></div>`;
+  tl.appendChild(item);
+});
+
+function forgiveMe(choice){
+  const el=document.getElementById('forgive-response');
+  el.textContent=choice==='yes'?'🌸 Thank you, my love. I promise to never take you for granted again. You are my world. ❤️':'💕 You just made my heart the happiest it has ever been. I love you more than words can say. Always. 🌹';
+  el.style.display='block';burstConfetti();
+  document.querySelectorAll('.forgive-btns button').forEach(b=>b.style.opacity='0.5');
+}
+
+function burstConfetti(){
+  const colors=['#ff4d7d','#e91e8c','#ffb3cc','#c2185b','#ff80ab'];
+  for(let i=0;i<40;i++){
+    const el=document.createElement('div');const size=6+Math.random()*8;
+    el.style.cssText=`position:fixed;width:${size}px;height:${size}px;background:${colors[~~(Math.random()*colors.length)]};border-radius:50%;left:${30+Math.random()*40}vw;top:${30+Math.random()*30}vh;pointer-events:none;z-index:999;opacity:1;transition:transform 1.2s ease,opacity 1.2s ease;`;
+    document.body.appendChild(el);
+    requestAnimationFrame(()=>{el.style.transform=`translate(${(Math.random()-0.5)*300}px,${-100-Math.random()*200}px) rotate(${Math.random()*360}deg)`;el.style.opacity='0';});
+    setTimeout(()=>el.remove(),1400);
+  }
+}
+
+let audio,playing=false;
+function toggleMusic(){
+  const btn=document.getElementById('musicBtn');
+  if(!audio){audio=new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');audio.loop=true;audio.volume=0.35;}
+  if(playing){audio.pause();btn.textContent='🎵';playing=false;}
+  else{audio.play().catch(()=>{});btn.textContent='🎶';playing=true;}
+}
+
+const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.style.opacity='1';});},{threshold:0.1});
+document.querySelectorAll('.glass-card,.reason-card,.timeline-item,.highlight-quote').forEach(el=>{el.style.transition='opacity 0.7s ease,transform 0.4s ease';observer.observe(el);});
+</script>
+</body>
+</html>
